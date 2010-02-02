@@ -4,7 +4,9 @@ from optparse import OptionParser
 import os
 import re
 import sys
+import urllib
 
+from BeautifulSoup import UnicodeDammit
 import couchdb
 
 try:
@@ -81,16 +83,16 @@ if __name__ == '__main__':
 	folder = library['Music Folder'].split('/')[:-1] # remove trailing ''
 	
 	docs = []
-	docs_map = {} # id => doc
 	for track_id in library['Tracks']:
 		track = library['Tracks'][track_id]
+		if track.has_key('Location'):
+			track['Location'] = urllib.unquote(UnicodeDammit(track['Location']).unicode) # unicode :(
 		fields = set(['Name', 'Artist', 'Album', 'Location']) # fields to include, if present
 		doc = dict([k, track[k]] for k in fields.intersection(track))
 		doc['_id'] = track['Persistent ID']
 		doc['Owner'] = options.username
 		doc['LocationPath'] = ['ROOT', options.username] + track['Location'].split('/')[len(folder):] # trim off the common folder; append username folder
 		docs.append(doc)
-		docs_map[doc['_id']] = doc
 	
 	print "Parsed %s docs for %s..." % (len(docs), options.username)
 	if options.limit:
