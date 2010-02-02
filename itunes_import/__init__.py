@@ -1,4 +1,10 @@
-import base64, datetime, re, sys
+import base64
+import datetime
+from optparse import OptionParser
+import os
+import re
+import sys
+
 import couchdb
 
 try:
@@ -42,18 +48,43 @@ class XMLPlist(dict):
 		return self.plist[key]
 
 if __name__ == '__main__':
-	library = XMLPlist('iTunes Library.xml')
-	
-	# calculate subset to save in DB
+	parser = OptionParser(usage = "usage: python -m itunes_import [options]")
+	parser.add_option("-l", "--library", dest="library", help="import from iTunes XML library",)
+	parser.add_option("-u", "--username", dest="username", help="set owner of files to username",)
+
+	(options, args) = parser.parse_args()
+	if not options.library or not options.username:
+		parser.print_help()
+		sys.exit(1)
+		
+	# resolve path to library
+	library = os.path.normpath(os.path.expanduser(options.library))
+	if not os.path.exists(library):
+		library = os.path.join(os.getcwd(), library)
+
+	try:
+		open(library)
+	except IOError:
+		sys.exit("Error: Can't open %s" % options.library)
+
+	# parse and calculate subset to save in DB
+	library = XMLPlist(library)
 	docs = []
 	for track_id in library['Tracks']:
 		track = library['Tracks'][track_id]
 		fields = set(['Name', 'Artist', 'Album', 'Location']) # fields to include, if present
 		doc = dict([k, track[k]] for k in fields.intersection(track))
 		doc['_id'] = track['Persistent ID']
-		doc['owner'] = 'noah'
+		doc['Owner'] = options.username
 		docs.append(doc)
-
+	
 	# bulk update DB
+	print "Adding %s docs for %s..." % (len(docs), options.username)
 	couch = couchdb.Server()
-	couch['files'].update(docs)
+	try:
+		couch.create('media')
+	except couchdb.client.PreconditionFailed:
+		pass
+	
+	results = couch['media'].update(docs)
+	print "Successfully added %s docs" % sum(r[0] for r in results)
