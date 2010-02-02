@@ -51,6 +51,7 @@ if __name__ == '__main__':
 	parser = OptionParser(usage = "usage: python -m itunes_import [options]")
 	parser.add_option("-l", "--library", dest="library", help="import from iTunes XML library",)
 	parser.add_option("-u", "--username", dest="username", help="set owner of files to username",)
+	parser.add_option("--limit", dest="limit", type="int", help="limit how many docs to add",)
 
 	(options, args) = parser.parse_args()
 	if not options.library or not options.username:
@@ -72,14 +73,16 @@ if __name__ == '__main__':
 	folder = library['Music Folder'].split('/')[:-1] # remove trailing ''
 	
 	docs = []
+	docs_map = {} # id => doc
 	for track_id in library['Tracks']:
 		track = library['Tracks'][track_id]
 		fields = set(['Name', 'Artist', 'Album', 'Location']) # fields to include, if present
 		doc = dict([k, track[k]] for k in fields.intersection(track))
 		doc['_id'] = track['Persistent ID']
 		doc['Owner'] = options.username
-		doc['LocationPath'] = [options.username] + track['Location'].split('/')[len(folder):] # trim off the common folder; append username folder
+		doc['LocationPath'] = ['ROOT', options.username] + track['Location'].split('/')[len(folder):] # trim off the common folder; append username folder
 		docs.append(doc)
+		docs_map[doc['_id']] = doc
 	
 	# bulk update DB
 	print "Parsed %s docs for %s..." % (len(docs), options.username)
@@ -88,6 +91,25 @@ if __name__ == '__main__':
 		couch.create('media')
 	except couchdb.client.PreconditionFailed:
 		pass
+	db = couch['media']
 	
-	results = couch['media'].update(docs)
-	print "Successfully added %s docs" % sum(r[0] for r in results)
+	if options.limit:
+		docs = docs[0:options.limit]
+
+	results = db.update(docs)
+
+	num_added = sum(r[0] for r in results)
+	num_updated = num_failed = 0
+
+	# manually update docs with revision conflicts
+	revisioned_docs = []
+	for success, _id, exception in results:
+		if type(exception) is couchdb.client.ResourceConflict:
+			docs_map[_id]['_rev'] = db[_id]['_rev'] # fetch rev from couch
+			revisioned_docs.append(docs_map[_id])
+
+	results = db.update(revisioned_docs)
+	num_updated = sum(r[0] for r in results)
+
+	#print results
+	print "Successfully added %s, updated %s, failed %s docs" % (num_added, num_updated, len(docs)-num_added-num_updated)
