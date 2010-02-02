@@ -68,6 +68,14 @@ if __name__ == '__main__':
 	except IOError:
 		sys.exit("Error: Can't open %s" % options.library)
 
+	# get handle to couchdb
+	couch = couchdb.Server()
+	try:
+		couch.create('media')
+	except couchdb.client.PreconditionFailed:
+		pass
+	db = couch['media']
+
 	# parse and calculate subset to save in DB
 	library = XMLPlist(library)
 	folder = library['Music Folder'].split('/')[:-1] # remove trailing ''
@@ -84,32 +92,18 @@ if __name__ == '__main__':
 		docs.append(doc)
 		docs_map[doc['_id']] = doc
 	
-	# bulk update DB
 	print "Parsed %s docs for %s..." % (len(docs), options.username)
-	couch = couchdb.Server()
-	try:
-		couch.create('media')
-	except couchdb.client.PreconditionFailed:
-		pass
-	db = couch['media']
-	
 	if options.limit:
 		docs = docs[0:options.limit]
+	
+	# bulk get all revision_ids for existing docs
+	headers, data = db.resource.post('_all_docs', {"keys": [doc['_id'] for doc in docs]})
+	id_rev_map = dict([(row['key'],row['value']['rev']) for row in data['rows']])
+	for doc in docs:
+		if doc['_id'] in id_rev_map:
+			doc['_rev'] = id_rev_map[doc['_id']]
 
+	# bulk update DB
 	results = db.update(docs)
-
 	num_added = sum(r[0] for r in results)
-	num_updated = num_failed = 0
-
-	# manually update docs with revision conflicts
-	revisioned_docs = []
-	for success, _id, exception in results:
-		if type(exception) is couchdb.client.ResourceConflict:
-			docs_map[_id]['_rev'] = db[_id]['_rev'] # fetch rev from couch
-			revisioned_docs.append(docs_map[_id])
-
-	results = db.update(revisioned_docs)
-	num_updated = sum(r[0] for r in results)
-
-	#print results
-	print "Successfully added %s, updated %s, failed %s docs" % (num_added, num_updated, len(docs)-num_added-num_updated)
+	print "Successfully added/updated %s, failed %s docs" % (num_added, len(docs)-num_added)
