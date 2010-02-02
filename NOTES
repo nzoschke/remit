@@ -4,3 +4,11 @@ GOAL
 		+ Playlist => CouchDB
 		
 Drag and drop UKI / Couchdb playlist UI
+
+--
+
+http://localhost:5984/media/_design/tree/_view/children2?group=true&startkey=[["noah"]]&endkey=[["noah"],[{}]]
+
+http://localhost:5984/media/_view/tree/children?startkey=[["noah","Radiohead"]]&endkey=[["noah","Radiohead"],[{}]]
+
+curl -g 'http://localhost:5984/media/_design/tree/_view/children2?group=true&startkey=[["noah"]]&endkey=[["noah"],[{}]]'

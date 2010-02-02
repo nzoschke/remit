@@ -69,6 +69,8 @@ if __name__ == '__main__':
 
 	# parse and calculate subset to save in DB
 	library = XMLPlist(library)
+	folder = library['Music Folder'].split('/')[:-1] # remove trailing ''
+	
 	docs = []
 	for track_id in library['Tracks']:
 		track = library['Tracks'][track_id]
@@ -76,10 +78,11 @@ if __name__ == '__main__':
 		doc = dict([k, track[k]] for k in fields.intersection(track))
 		doc['_id'] = track['Persistent ID']
 		doc['Owner'] = options.username
+		doc['LocationPath'] = [options.username] + track['Location'].split('/')[len(folder):] # trim off the common folder; append username folder
 		docs.append(doc)
 	
 	# bulk update DB
-	print "Adding %s docs for %s..." % (len(docs), options.username)
+	print "Parsed %s docs for %s..." % (len(docs), options.username)
 	couch = couchdb.Server()
 	try:
 		couch.create('media')
