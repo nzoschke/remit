@@ -4,6 +4,18 @@ $.CouchApp(function(app) {
 	// {"key":[["ROOT"],["jason"]],"value":15690},
 	// {"key":[["ROOT"],["noah"]],"value":10360}
 	// ]}
+	
+	function URLDecode(s) {
+		var o=s;
+		var binVal,t;
+		var r=/(%[^%]{2})/;
+		while((m=r.exec(o))!=null && m.length>1 && m[1]!='') {
+			b=parseInt(m[1].substr(1),16);
+			t=String.fromCharCode(b);o=o.replace(m[1],t);
+		}
+		return o;
+	};
+	
 	function getChildren(path) {
 		path = path.split('/');
 		app.view("children", {
@@ -11,25 +23,30 @@ $.CouchApp(function(app) {
 			startkey: 	[path],
 			endkey: 	[path,[{}]],
 			success:	function(json) {
-				// add link to parent path
-				$("#tree").html('');
+				// add links to current and parent path
 				var firstChildPath = json.rows[0].key[0].join('/') + '/' + json.rows[0].key[1].join('/');
 				var parentPath = firstChildPath.split('/').slice(0,-2).join('/');
-				$("#tree").append("<li><a class=\"node\" href=\"#\">" + parentPath + "</a></li>");
+				var currentPath = firstChildPath.split('/').slice(0,-1).join('/');
+				$("#path").html(URLDecode(currentPath));
+				$("#tree").html('');
+				$("#tree").append("<li><a class=\"node\" href=\"" + currentPath + "\">.</a></li>");
+				$("#tree").append("<li><a class=\"node\" href=\"" + parentPath + "\">..</a></li>");
 				
+				// add links for children
 				for (var i in json.rows) { // FIXME: for each?!
 					var row = json.rows[i];
-					var childpath = row.key[0].join('/') + '/' + row.key[1].join('/');
+					var childPath = row.key[0].join('/') + '/' + row.key[1].join('/');
 					var row = json.rows[i];
-					$("#tree").append("<li><a class=\"node\" href=\"#\">" + row.key[0].join('/') + '/' + row.key[1].join('/') + "</a></li>");
+					$("#tree").append("<li><a class=\"node\" href=\"" + childPath + "\">" + URLDecode(row.key[1].join('/')) + "</a></li>");
 				}
 			}
 		});
 		
-	}
+	};
 	
 	$(".node").live("click", function() {
-		getChildren(this.text);
+		getChildren($(this).attr('href')); // get raw (relative) href attr
+		return false;
 	});
 	
 	getChildren("ROOT");
