@@ -7,9 +7,9 @@ Drag and drop UKI / Couchdb playlist UI
 
 --
 
-http://localhost:5984/media/_design/tree/_view/children2?group=true&startkey=[["noah"]]&endkey=[["noah"],[{}]]
-
-http://localhost:5984/media/_view/tree/children?startkey=[["noah","Radiohead"]]&endkey=[["noah","Radiohead"],[{}]]
+http://localhost:5984/media/_design/tree/_view/children?group=true&startkey=[["ROOT","noah"]]&endkey=[["ROOT","noah"],[{}]]
+http://localhost:5984/media/_design/tree/_view/children?group=true&startkey=[["ROOT","noah","Radiohead"]]&endkey=[["ROOT","noah","Radiohead"],[{}]]
+http://localhost:5984/media/_fti/search/by_all?q=Radiohead
 
 ##########
 # CouchDB CURL interface
