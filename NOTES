@@ -1,0 +1,6 @@
+GOAL
+	UKI Skeleton
+		Library
+		+ Playlist => CouchDB
+		
+Drag and drop UKI / Couchdb playlist UI
