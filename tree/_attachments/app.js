@@ -16,7 +16,7 @@ var page = uki({ view: 'SplitPane', rect: '1000 500', anchors: 'left top right b
         { view: 'Label', rect: '10 70 200 20', anchors: 'left top', text: 'Loading...', name: 'loading' }
     ],
     rightChildViews: [
-        { view: 'List', rect: '700 500', anchors: 'left top right bottom' },
+        { view: 'List', rect: '700 500', anchors: 'left top right bottom', id: 'fileList' },
         { view: 'Box', rect: '700 500', anchors: 'left top right bottom', style: { zIndex: 101 }, id: 'dragOverlay', 
             visible: false }
     ]
@@ -43,16 +43,16 @@ $.CouchApp(function(app) {
 				var parentPath = firstChildPath.split('/').slice(0,-2).join('/');
 				var currentPath = firstChildPath.split('/').slice(0,-1).join('/');
 				$("#path").html(currentPath);
-				$("#tree").html('');
-				$("#tree").append("<li><a class=\"node\" href=\"" + currentPath + "\">.</a></li>");
-				$("#tree").append("<li><a class=\"node\" href=\"" + parentPath + "\">..</a></li>");
+				$("#fileList").html('');
+				$("#fileList").append("<li><a class=\"node\" href=\"" + currentPath + "\">.</a></li>");
+				$("#fileList").append("<li><a class=\"node\" href=\"" + parentPath + "\">..</a></li>");
 				
 				// add links for children
 				for (var i in json.rows) { // FIXME: for each?!
 					var row = json.rows[i];
 					var childPath = row.key[0].join('/') + '/' + row.key[1].join('/');
 					var row = json.rows[i];
-					$("#tree").append("<li><a class=\"node\" href=\"" + childPath + "\">" + row.key[1].join('/') + "</a></li>");
+					$("#fileList").append("<li><a class=\"node\" href=\"" + childPath + "\">" + row.key[1].join('/') + "</a></li>");
 				}
 			}
 		});
