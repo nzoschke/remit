@@ -1,3 +1,29 @@
+var page = uki({ view: 'SplitPane', rect: '1000 500', anchors: 'left top right bottom', 
+    handlePosition: 299, handleWidth: 1,
+    leftChildViews: [
+        { view: 'Box', rect: '0 0 299 31', anchors: 'left top right', background: 'theme(panel)', style: { zIndex: 101 },
+            childViews: [
+                { view: 'TextField', rect: '5 5 288 22', anchors: 'left top right', placeholder: 'Search', name: 'search' }
+            ]},
+        { view: 'ScrollPane', rect: '0 30 299 470', anchors: 'left top bottom right', childViews: [
+            { view: 'List', rect: '299 470', anchors: 'left top bottom right', rowHeight: '20', 
+                style: { fontSize: '12px'}, textSelectable: false, className: 'tree' }
+        ], name: 'treeScroll' },
+        { view: 'ScrollPane', rect: '0 30 299 470', anchors: 'left top bottom right', childViews: [
+            { view: 'List', rect: '299 470', anchors: 'left top bottom right', rowHeight: '46', 
+                textSelectable: false, className: 'list' }
+        ], visible: false, name: 'listScroll' },
+        { view: 'Label', rect: '10 70 200 20', anchors: 'left top', text: 'Loading...', name: 'loading' }
+    ],
+    rightChildViews: [
+        { view: 'List', rect: '700 500', anchors: 'left top right bottom' },
+        { view: 'Box', rect: '700 500', anchors: 'left top right bottom', style: { zIndex: 101 }, id: 'dragOverlay', 
+            visible: false }
+    ]
+});
+
+page.attachTo(window, '1000 500');
+
 $.CouchApp(function(app) {
 	// http://localhost:5984/media/_design/tree/_view/children?group=true&startkey=[["ROOT"]]&endkey=[["ROOT"],[{}]]
 	// {"rows":[
