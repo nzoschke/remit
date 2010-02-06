@@ -33,6 +33,20 @@ uki({
         view: 'List', rect: '0 0 200 210', anchors: 'top left right', 
         data: [], rowHeight: 30, id: 'list2', throttle: 0
       }]
+    }, {
+      view: 'ScrollPane', rect: '400 0 200 200', anchors: 'left top bottom', background: '#0F0',
+      scrollableH: 'false', scrollableV: 'true',
+      childViews: [{
+        view: 'List', rect: '0 0 200 210', anchors: 'top left right', 
+        data: [], rowHeight: 30, id: 'list3', throttle: 0
+      }]
+    }, {
+      view: 'ScrollPane', rect: '600 0 200 200', anchors: 'left top bottom', background: '#0F0',
+      scrollableH: 'false', scrollableV: 'true',
+      childViews: [{
+        view: 'List', rect: '0 0 200 210', anchors: 'top left right', 
+        data: [], rowHeight: 30, id: 'list4', throttle: 0
+      }]
     }],
     bottomChildViews: []
   }]
@@ -48,7 +62,18 @@ uki('#doIt').click(function () {
 uki('#list1').click(function() {
   var selectedNode = this.data()[this.selectedIndex()];
   getChildren(selectedNode.key, '#list2');
-})
+});
+
+uki('#list2').click(function() {
+  var selectedNode = this.data()[this.selectedIndex()];
+  getChildren(selectedNode.key, '#list3');
+});
+
+uki('#list3').click(function() {
+  var selectedNode = this.data()[this.selectedIndex()];
+  getChildren(selectedNode.key, '#list4');
+});
+
  
 uki('#doIt').resizeToContents('width').layout(); // fix button size
 
@@ -60,14 +85,10 @@ uki('#doIt').resizeToContents('width').layout(); // fix button size
 function getChildren(path, listID) {
   $.CouchApp(function(app) {
   	// http://localhost:5984/media/_design/tree/_view/children?group=true&startkey=[["ROOT"]]&endkey=[["ROOT"],[{}]]
-  	// {"rows":[
-  	// {"key":[["ROOT"],["jason"]],"value":15690},
-  	// {"key":[["ROOT"],["noah"]],"value":10360}
-  	// ]}
-
+  	// {"rows":[{"key":[["ROOT"],["jason"]],"value":15690},{"key":[["ROOT"],["noah"]],"value":10360}]}
 		app.view("children", {
 			group:		true, 
-			startkey: 	[path],
+			startkey: [path],
 			endkey: 	[path,[{}]],
 			success:	function(json) {
 			  var data = [];
