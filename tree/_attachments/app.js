@@ -1,7 +1,15 @@
-var data = ['this is', '30000k long', 'list'];
-for (var i=3; i < 30000; i++) {
-    data[i] = 'item #' + (i+1);
-};
+//var data = ['this is', '30000k long', 'list'];
+//for (var i=3; i < 30000; i++) {
+//    data[i] = 'item #' + (i+1);
+//};
+
+var Node = function(path) {
+    this.path = path;
+}
+Node.prototype = {
+  toString: function() { return this.path }
+}
+var data = [new Node('abc'), {a: 'a', toString: function() { return 'ass'}}];
 
 uki({
   view: 'SplitPane',
@@ -24,7 +32,7 @@ uki({
       }]
     }, {
       view: 'ScrollPane', rect: '200 0 200 200', anchors: 'left top bottom', background: '#0F0',
-      scrollableH: false, scrollableV: 'true',
+      scrollableH: 'false', scrollableV: 'true',
       childViews: [{
         view: 'List', rect: '0 0 200 900000', anchors: 'top left right', 
         data: [], rowHeight: 30, id: 'list', throttle: 0
@@ -39,7 +47,6 @@ uki('#doIt').click(function () {
         .html(uki('#tree1').html() + ' Lorem ipsum dolor sit amet, consectetur adipisicing elit ') // add more text
         .resizeToContents('height').parent().layout(); // resize to contents and relayout
         
-    uki('#list').data(data);
 });
 
 uki('#list').click(function() {
