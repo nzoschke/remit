@@ -41,6 +41,10 @@ uki('#doIt').click(function () {
         
     uki('#list').data(data);
 });
+
+uki('#list').click(function() {
+  alert(uki('#list').selectedIndex());
+})
  
 uki('#doIt').resizeToContents('width').layout(); // fix button size
 
