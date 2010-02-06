@@ -27,7 +27,7 @@ uki({
       scrollableH: false, scrollableV: 'true',
       childViews: [{
         view: 'List', rect: '0 0 200 900000', anchors: 'top left right', 
-        data: data, rowHeight: 30, id: 'list', throttle: 0
+        data: [], rowHeight: 30, id: 'list', throttle: 0
       }]
     }],
     bottomChildViews: []
@@ -38,6 +38,8 @@ uki('#doIt').click(function () {
     uki('#tree1') 
         .html(uki('#tree1').html() + ' Lorem ipsum dolor sit amet, consectetur adipisicing elit ') // add more text
         .resizeToContents('height').parent().layout(); // resize to contents and relayout
+        
+    uki('#list').data(data);
 });
  
 uki('#doIt').resizeToContents('width').layout(); // fix button size
