@@ -2,17 +2,39 @@ uki({
   view: 'SplitPane',
   rect: '1000 600', anchors: 'left top right bottom',
   handlePosition: 200, leftMin: 200, rightMin: 300,
-  leftChildViews: [],
+  leftChildViews: [{view: 'Button', rect: '10 10 100 24', anchors: 'left top', text: 'resize', id: 'doIt' }],
   rightChildViews: [{
     view: 'VerticalSplitPane',
     rect: '793 600', anchors: 'left top right bottom', vertical: true,
     handlePosition: 200, topMin: 150,
-    topChildViews: [],
+    topChildViews: [{
+      view: 'ScrollPane', rect: '200 200', anchors: 'left top bottom', background: '#F00',
+      scrollableH: 'false', scrollableV: 'true',
+      childViews: [{
+        view: 'Label', rect: '200 200',  // label with long text
+        anchors: 'top left rigth', // anchored to the top right (grow down)
+        multiline: 'true',
+        text: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
+        inset: '3 3', id: 'target'
+      }]
+    }],
     bottomChildViews: []
   }]
 }).attachTo( window, '1000 600' );
 
+uki('#doIt').click(function () {
+    uki('#target') 
+        .html(uki('#target').html() + ' Lorem ipsum dolor sit amet, consectetur adipisicing elit ') // add more text
+        .resizeToContents('height').parent().layout(); // resize to contents and relayout
+});
+ 
+uki('#doIt').resizeToContents('width').layout(); // fix button size
 
+/*//uki("#tree1").text = 'foo';
+
+.html(uki('#target').html() + ' Lorem ipsum dolor sit amet, consectetur adipisicing elit ') // add more text
+        .resizeToContents('height').parent().resizeToContents('height').layout(); // resize to contents and relayout
+*/
 $.CouchApp(function(app) {
   return;
 	// http://localhost:5984/media/_design/tree/_view/children?group=true&startkey=[["ROOT"]]&endkey=[["ROOT"],[{}]]
