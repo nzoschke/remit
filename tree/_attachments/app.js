@@ -1,3 +1,8 @@
+var data = ['this is', '30000k long', 'list'];
+for (var i=3; i < 30000; i++) {
+    data[i] = 'item #' + (i+1);
+};
+
 uki({
   view: 'SplitPane',
   rect: '1000 600', anchors: 'left top right bottom',
@@ -15,7 +20,14 @@ uki({
         anchors: 'top left rigth', // anchored to the top right (grow down)
         multiline: 'true',
         text: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
-        inset: '3 3', id: 'target'
+        inset: '3 3', id: 'tree1'
+      }]
+    }, {
+      view: 'ScrollPane', rect: '200 0 200 200', anchors: 'left top bottom', background: '#0F0',
+      scrollableH: false, scrollableV: 'true',
+      childViews: [{
+        view: 'List', rect: '0 0 200 900000', anchors: 'top left right', 
+        data: data, rowHeight: 30, id: 'list', throttle: 0
       }]
     }],
     bottomChildViews: []
@@ -23,8 +35,8 @@ uki({
 }).attachTo( window, '1000 600' );
 
 uki('#doIt').click(function () {
-    uki('#target') 
-        .html(uki('#target').html() + ' Lorem ipsum dolor sit amet, consectetur adipisicing elit ') // add more text
+    uki('#tree1') 
+        .html(uki('#tree1').html() + ' Lorem ipsum dolor sit amet, consectetur adipisicing elit ') // add more text
         .resizeToContents('height').parent().layout(); // resize to contents and relayout
 });
  
