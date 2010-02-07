@@ -5,12 +5,14 @@ Node.prototype = {
   }
 }
 
+var TrackRow = function() {}
+
 uki({
   view: 'SplitPane',
   rect: '1000 600', anchors: 'left top right bottom',
-  handlePosition: 200, leftMin: 200, rightMin: 300,
+  handlePosition: 200, leftMin: 200, rightMin: 700,
   leftChildViews: [{
-    view: 'TextField', rect: '5 5 190 24', anchors: 'left top right', value: '', placeholder: 'Search library',
+    view: 'TextField', id: 'search', rect: '5 5 190 24', anchors: 'left top right', value: '', placeholder: 'Search library',
   }],
   rightChildViews: [{
     view: 'VerticalSplitPane',
@@ -49,7 +51,20 @@ uki({
           }]
         }],
     }],
-    bottomChildViews: []
+    bottomChildViews: [{
+      view: 'ScrollPane', rect: '793 393', anchors: 'left right top bottom', background: '#D0D7E2',
+      scrollableH: 'true', scrollableV: 'true',
+      childViews: [{
+        view: 'Table', rect: '793 393', anchors: 'top bottom left right', 
+        data: [], rowHeight: 30, id: 'tracks', throttle: 0,
+        columns: [
+          { view: 'table.NumberColumn', label: 'ID', width: 40 },
+          { view: 'table.CustomColumn', label: 'Name', resizable: true, minWidth: 100, width: 250 },
+          { view: 'table.CustomColumn', label: 'Artist', resizable: true, minWidth: 100, width: 150 },
+          { view: 'table.CustomColumn', label: 'Album', resizable: true, minWidth: 100, width: 150, },
+        ]
+      }]
+    }]
   }]
 }).attachTo( window, '1000 600' );
 
@@ -67,6 +82,31 @@ uki('#list3').click(function() {
   var selectedNode = this.data()[this.selectedIndex()];
   getChildren(selectedNode.key, '#list4');
 });
+
+
+
+uki('#search').change(function() {
+  // http://localhost:5984/media/_fti/search/by_all?q=Radiohead
+  $.couch.db('media').fti('by_all', this.value(), {
+    error: function(resp) { alert('error!'); },
+    success: function(json) {
+      // get all keys from FTI response
+      keys = [];
+      for (var i in json.rows) keys.push(json.rows[i].id);
+      $.couch.db('media').view('tree/by_path', {
+        keys: keys,
+        success: function(json) {
+          var data = [];
+          for (var i in json.rows) {
+            var row = json.rows[i];
+            data[i] = [row.key, row.value.join('/')]
+          }
+          uki("#tracks").data(data);
+        }
+      });
+    }
+  });
+})
 
 function getChildren(path, listID) {
   // TODO: set up view -- progress indicator; clear descendent lists
