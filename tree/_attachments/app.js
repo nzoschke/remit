@@ -83,23 +83,36 @@ uki('#list3').click(function() {
   getChildren(selectedNode.key, '#list4');
 });
 
-
+uki('#tracks').dblclick(function() {
+  var key = this.data()[this.selectedIndex()][0];
+  $.couch.db('media').view('tree/by_network_location', {
+    keys: [key],
+    success: function(json) {
+      var audio = $("#audio")[0]
+      console.log(json.rows[0].value);
+      audio.setAttribute('src', json.rows[0].value);
+    	audio.load();
+    	audio.play();
+    }
+  });
+});
 
 uki('#search').change(function() {
   // http://localhost:5984/media/_fti/search/by_all?q=Radiohead
   $.couch.db('media').fti('by_all', this.value(), {
+    limit: 10000,
     error: function(resp) { alert('error!'); },
     success: function(json) {
       // get all keys from FTI response
       keys = [];
       for (var i in json.rows) keys.push(json.rows[i].id);
-      $.couch.db('media').view('tree/by_path', {
+      $.couch.db('media').view('tree/by_metadata', {
         keys: keys,
         success: function(json) {
           var data = [];
           for (var i in json.rows) {
             var row = json.rows[i];
-            data[i] = [row.key, row.value.join('/')]
+            data[i] = [row.key, row.value['Name'], row.value['Artist'], row.value['Album']];
           }
           uki("#tracks").data(data);
         }

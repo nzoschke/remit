@@ -5,6 +5,10 @@ GOAL
 		
 Drag and drop UKI / Couchdb playlist UI
 
+NO DRAG AND DROP?!?
+http://www.jezra.net/projects/pageplayer
+http://www.scottandrew.com/pub/html5audioplayer/
+
 --
 
 http://localhost:5984/media/_design/tree/_view/children?group=true&startkey=[["ROOT","noah"]]&endkey=[["ROOT","noah"],[{}]]

@@ -377,7 +377,7 @@
           ajax({
               type: "GET",
               data: {q: q},
-              url: this.uri + "_fti/search/" + name
+              url: this.uri + "_fti/search/" + name + encodeOptions(options)
             },
             options, "An error occurred accessing the view"
           );
