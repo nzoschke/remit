@@ -93,6 +93,7 @@ if __name__ == '__main__':
 		doc['_id'] = track['Persistent ID']
 		doc['Owner'] = options.username
 		doc['LocationPath'] = ['ROOT', options.username] + track['Location'].split('/')[len(folder):] # trim off the common folder; append username folder
+		if len(doc['LocationPath']) == 2: continue # doesn't live in common folder
 		docs.append(doc)
 	
 	print "Parsed %s docs for %s..." % (len(docs), options.username)
