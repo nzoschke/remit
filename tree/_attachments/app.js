@@ -1,6 +1,7 @@
 var Node = function() {}
 Node.prototype = {
   toString: function() { 
+    return this.label;
     return '<div class="node ' + (this.numChildren > 0 ? 'folder' : 'file') + '">' + this.label + '</div>';
   }
 }
@@ -8,65 +9,68 @@ Node.prototype = {
 var TrackRow = function() {}
 
 uki({
-  view: 'SplitPane',
-  rect: '1000 600', anchors: 'left top right bottom',
-  handlePosition: 200, leftMin: 200, rightMin: 700,
-  leftChildViews: [{
-    view: 'TextField', id: 'search', rect: '5 5 190 24', anchors: 'left top right', value: '', placeholder: 'Search library',
-  }],
-  rightChildViews: [{
-    view: 'VerticalSplitPane',
-    rect: '793 600', anchors: 'left top right bottom', vertical: true,
-    handlePosition: 200, topMin: 150,
-    topChildViews: [{
-      view: 'ScrollPane', rect: '793 200', anchors: 'left right top bottom', background: '#F00',
-      scrollableH: 'true', scrollableV: 'false',
-      childViews: [{
-          view: 'ScrollPane', rect: '200 200', anchors: 'left top bottom', background: '#F00',
+  view: 'Container',
+  rect: '1000 600', anchors: 'left right top bottom',
+  childViews: [{
+    view: 'SplitPane',
+    rect: '1000 585', anchors: 'left top right bottom',
+    handlePosition: 200, leftMin: 200, rightMin: 700,
+    leftChildViews: [{
+      view: 'TextField', id: 'search', rect: '5 5 190 24', anchors: 'left top right', value: '', placeholder: 'Search library',
+    }],
+    rightChildViews: [{
+      view: 'VerticalSplitPane',
+      rect: '793 585', anchors: 'left top right bottom', vertical: true,
+      handlePosition: 250, topMin: 150,
+      topChildViews: [{
+        view: 'ScrollPane', rect: '400 250', anchors: 'left right top bottom', background: '#F00',
+        scrollableH: 'true', scrollableV: 'false',
+        childViews: [{
+          view: 'ScrollPane', rect: '150 235', anchors: 'left top bottom', background: '#F00',
           scrollableH: 'false', scrollableV: 'true',
           childViews: [{
-            view: 'List', rect: '0 0 200 210', anchors: 'top left right', 
+            view: 'List', rect: '0 0 150 410', anchors: 'top left right', 
             data: [], rowHeight: 30, id: 'list1', throttle: 0
           }]
         }, {
-          view: 'ScrollPane', rect: '200 0 200 200', anchors: 'left top bottom', background: '#0F0',
+          view: 'ScrollPane', rect: '150 0 150 235', anchors: 'left top bottom', background: '#F00',
           scrollableH: 'false', scrollableV: 'true',
           childViews: [{
-            view: 'List', rect: '0 0 200 210', anchors: 'top left right', 
+            view: 'List', rect: '0 0 150 410', anchors: 'top left right', 
             data: [], rowHeight: 30, id: 'list2', throttle: 0
           }]
         }, {
-          view: 'ScrollPane', rect: '400 0 200 200', anchors: 'left top bottom', background: '#0F0',
+          view: 'ScrollPane', rect: '300 0 150 235', anchors: 'left top bottom', background: '#F00',
           scrollableH: 'false', scrollableV: 'true',
           childViews: [{
-            view: 'List', rect: '0 0 200 210', anchors: 'top left right', 
+            view: 'List', rect: '0 0 150 410', anchors: 'top left right', 
             data: [], rowHeight: 30, id: 'list3', throttle: 0
           }]
-        }, {
-          view: 'ScrollPane', rect: '600 0 200 200', anchors: 'left top bottom', background: '#0F0',
-          scrollableH: 'false', scrollableV: 'true',
-          childViews: [{
-            view: 'List', rect: '0 0 200 210', anchors: 'top left right', 
-            data: [], rowHeight: 30, id: 'list4', throttle: 0
-          }]
-        }],
-    }],
-    bottomChildViews: [{
-      view: 'ScrollPane', rect: '793 393', anchors: 'left right top bottom', background: '#D0D7E2',
-      scrollableH: 'true', scrollableV: 'true',
-      childViews: [{
-        view: 'Table', rect: '793 393', anchors: 'top bottom left right', 
-        data: [], rowHeight: 30, id: 'tracks', throttle: 0,
-        columns: [
-          { view: 'table.NumberColumn', label: 'ID', width: 40 },
-          { view: 'table.CustomColumn', label: 'Name', resizable: true, minWidth: 100, width: 250 },
-          { view: 'table.CustomColumn', label: 'Artist', resizable: true, minWidth: 100, width: 150 },
-          { view: 'table.CustomColumn', label: 'Album', resizable: true, minWidth: 100, width: 150, },
-        ]
+        }]
+      }, {
+        view: 'ScrollPane', rect: '400 0 393 250', anchors: 'right top bottom', background: '#0F0',
+        scrollableH: 'true', scrollableV: 'false',
+      }],
+      bottomChildViews: [{
+        view: 'ScrollPane', rect: '793 343', anchors: 'left right top bottom', background: '#D0D7E2',
+        scrollableH: 'true', scrollableV: 'true',
+        childViews: [{
+          view: 'Table', rect: '793 343', anchors: 'top bottom left right', 
+          data: [], rowHeight: 30, id: 'tracks', throttle: 0,
+          columns: [
+            { view: 'table.NumberColumn', label: 'ID', width: 40 },
+            { view: 'table.CustomColumn', label: 'Name', resizable: true, minWidth: 100, width: 250 },
+            { view: 'table.CustomColumn', label: 'Artist', resizable: true, minWidth: 100, width: 150 },
+            { view: 'table.CustomColumn', label: 'Album', resizable: true, minWidth: 100, width: 150, },
+          ]
+        }]
       }]
     }]
+  },{
+    view: 'Box', rect: '0 585 1000 15', anchors: 'left right bottom', background: '#00F'
   }]
-}).attachTo( window, '1000 600' );
+}).attachTo( window, '1000 600');
+
 
 uki('#list1').click(function() {
   var selectedNode = this.data()[this.selectedIndex()];
