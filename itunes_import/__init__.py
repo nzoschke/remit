@@ -51,9 +51,10 @@ class XMLPlist(dict):
 
 if __name__ == '__main__':
 	parser = OptionParser(usage = "usage: python -m itunes_import [options]")
-	parser.add_option("-l", "--library", dest="library", help="import from iTunes XML library",)
-	parser.add_option("-u", "--username", dest="username", help="set owner of files to username",)
-	parser.add_option("--limit", dest="limit", type="int", help="limit how many docs to add",)
+	parser.add_option("-d", "--database", help="CouchDB database name to create/update",)
+	parser.add_option("-l", "--library", help="import from iTunes XML library",)
+	parser.add_option("-u", "--username", help="set owner of files to username",)
+	parser.add_option("--limit", type="int", help="limit how many docs to add",)
 
 	(options, args) = parser.parse_args()
 	if not options.library or not options.username:
@@ -73,10 +74,10 @@ if __name__ == '__main__':
 	# get handle to couchdb
 	couch = couchdb.Server()
 	try:
-		couch.create('media')
+		couch.create(options.database)
 	except couchdb.client.PreconditionFailed:
 		pass
-	db = couch['media']
+	db = couch[options.database]
 
 	# parse and calculate subset to save in DB
 	library = XMLPlist(library)
@@ -100,7 +101,11 @@ if __name__ == '__main__':
 	
 	# bulk get all revision_ids for existing docs
 	headers, data = db.resource.post('_all_docs', {"keys": [doc['_id'] for doc in docs]})
-	id_rev_map = dict([(row['key'],row['value']['rev']) for row in data['rows']])
+	id_rev_map = {}
+	for row in data['rows']:
+		if not row.has_key('value'): continue
+		id_rev_map[row['key']] = row['value']['rev']
+
 	for doc in docs:
 		if doc['_id'] in id_rev_map:
 			doc['_rev'] = id_rev_map[doc['_id']]
