@@ -13,7 +13,7 @@ function(doc) {
 	  ret.add(doc.Album, {'field': 'Album'});
   }
   if (doc.owner) {
-	  ret.add(doc.Album, {'field': 'Owner'});
+	  ret.add(doc.owner, {'field': 'Owner'});
   }
 	return ret;
 }
