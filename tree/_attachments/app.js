@@ -1,3 +1,5 @@
+var DBNAME = 'media-small';
+
 var Node = function() {}
 Node.prototype = {
   toString: function() { 
@@ -30,33 +32,39 @@ uki({
           scrollableH: 'false', scrollableV: 'true',
           childViews: [{
             view: 'List', rect: '0 0 150 410', anchors: 'top left right', 
-            data: [], rowHeight: 30, id: 'list1', throttle: 0
+            data: [], rowHeight: 30, id: 'list1', throttle: 0, focusable: false,
           }]
         }, {
           view: 'ScrollPane', rect: '150 0 150 235', anchors: 'left top bottom', background: '#F00',
           scrollableH: 'false', scrollableV: 'true',
           childViews: [{
             view: 'List', rect: '0 0 150 410', anchors: 'top left right', 
-            data: [], rowHeight: 30, id: 'list2', throttle: 0
+            data: [], rowHeight: 30, id: 'list2', throttle: 0, focusable: false,
           }]
         }, {
           view: 'ScrollPane', rect: '300 0 150 235', anchors: 'left top bottom', background: '#F00',
           scrollableH: 'false', scrollableV: 'true',
           childViews: [{
             view: 'List', rect: '0 0 150 410', anchors: 'top left right', 
-            data: [], rowHeight: 30, id: 'list3', throttle: 0
+            data: [], rowHeight: 30, id: 'list3', throttle: 0, focusable: false,
           }]
         }]
       }, {
-        view: 'ScrollPane', rect: '400 0 393 250', anchors: 'right top bottom', background: '#0F0',
-        scrollableH: 'true', scrollableV: 'false',
+        view: 'Table', rect: '400 0 393 250', anchors: 'top bottom right', 
+        data: [], rowHeight: 30, id: 'files', throttle: 0,
+        columns: [
+          { view: 'table.NumberColumn', label: 'ID', width: 40 },
+          { view: 'table.CustomColumn', label: 'Name', resizable: true, minWidth: 100, width: 152 },
+          { view: 'table.CustomColumn', label: 'Artist', resizable: true, minWidth: 100, width: 100 },
+          { view: 'table.CustomColumn', label: 'Album', resizable: true, minWidth: 100, width: 100, },
+        ]
       }],
       bottomChildViews: [{
         view: 'ScrollPane', rect: '793 343', anchors: 'left right top bottom', background: '#D0D7E2',
         scrollableH: 'true', scrollableV: 'true',
         childViews: [{
           view: 'Table', rect: '793 343', anchors: 'top bottom left right', 
-          data: [], rowHeight: 30, id: 'tracks', throttle: 0,
+          data: [], rowHeight: 30, id: 'playlist', throttle: 0,
           columns: [
             { view: 'table.NumberColumn', label: 'ID', width: 40 },
             { view: 'table.CustomColumn', label: 'Name', resizable: true, minWidth: 100, width: 250 },
@@ -70,7 +78,6 @@ uki({
     view: 'Box', rect: '0 585 1000 15', anchors: 'left right bottom', background: '#00F'
   }]
 }).attachTo( window, '1000 600');
-
 
 uki('#list1').click(function() {
   var selectedNode = this.data()[this.selectedIndex()];
@@ -89,7 +96,7 @@ uki('#list3').click(function() {
 
 uki('#tracks').dblclick(function() {
   var key = this.data()[this.selectedIndex()][0];
-  $.couch.db('media').view('tree/by_network_location', {
+  $.couch.db(DBNAME).view('tree/by_network_location', {
     keys: [key],
     success: function(json) {
       var audio = $("#audio")[0]
@@ -103,14 +110,14 @@ uki('#tracks').dblclick(function() {
 
 uki('#search').change(function() {
   // http://localhost:5984/media/_fti/search/by_all?q=Radiohead
-  $.couch.db('media').fti('by_all', this.value(), {
+  $.couch.db(DBNAME).fti('by_all', this.value(), {
     limit: 10000,
     error: function(resp) { alert('error!'); },
     success: function(json) {
       // get all keys from FTI response
       keys = [];
       for (var i in json.rows) keys.push(json.rows[i].id);
-      $.couch.db('media').view('tree/by_metadata', {
+      $.couch.db(DBNAME).view('tree/by_metadata', {
         keys: keys,
         success: function(json) {
           var data = [];
@@ -123,7 +130,21 @@ uki('#search').change(function() {
       });
     }
   });
-})
+});
+
+function getFiles(keys) {
+  $.couch.db(DBNAME).view('tree/by_metadata', {
+    keys: keys,
+    success: function(json) {
+      var data = [];
+      for (var i in json.rows) {
+        var row = json.rows[i];
+        data[i] = [row.key, row.value['Name'], row.value['Artist'], row.value['Album']];
+      }
+      uki("#files").data(data);
+    }
+  });  
+};
 
 function getChildren(path, listID) {
   // TODO: set up view -- progress indicator; clear descendent lists
@@ -136,17 +157,25 @@ function getChildren(path, listID) {
 			startkey: [path],
 			endkey: 	[path,[{}]],
 			success:	function(json) {
-			  var data = [];
-				for (var i in json.rows) { // FIXME: for each?!
+			  var fileKeys = [];
+			  var folderData = [];
+				for (var i in json.rows) {
 				  var row = json.rows[i];
-				  var node = new Node();
-				  node.label = row.key[1][0];
-				  node.key = row.key[0];
-				  node.key.push(node.label);
-				  node.numChildren = row.value;
-				  data[i] = node;
+				  if (row.value > 0) { // numeric => number of children => branch
+            var node = new Node();
+            node.label = row.key[1][0];
+            node.key = row.key[0];
+            node.key.push(node.label);
+            node.numChildren = row.value;
+            folderData[i] = node;
+				  }
+				  else { // non-numeric => _id => leaf
+				    fileKeys.push(row.value);
+				  }
 				}
-				uki(listID).data(data);
+				console.log(fileKeys);
+				uki(listID).data(folderData);
+				if (fileKeys.length) getFiles(fileKeys);
 			}
 		});
   });  
