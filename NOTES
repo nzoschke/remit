@@ -8,12 +8,13 @@ Drag and drop UKI / Couchdb playlist UI
 NO DRAG AND DROP?!?
 http://www.jezra.net/projects/pageplayer
 http://www.scottandrew.com/pub/html5audioplayer/
+http://stackoverflow.com/questions/650643/lucene-indexing-store-and-indexing-modes-explained
 
 --
 
 http://localhost:5984/media/_design/tree/_view/children?group=true&startkey=[["ROOT","noah"]]&endkey=[["ROOT","noah"],[{}]]
 http://localhost:5984/media/_design/tree/_view/children?group=true&startkey=[["ROOT","noah","Radiohead"]]&endkey=[["ROOT","noah","Radiohead"],[{}]]
-http://localhost:5984/media/_fti/search/by_all?q=Radiohead
+http://localhost:5984/media/_fti/search/by_metadata?q=Radiohead
 
 ##########
 # CouchDB CURL interface

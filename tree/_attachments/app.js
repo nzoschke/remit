@@ -1,4 +1,4 @@
-var DBNAME = 'media-small';
+var DBNAME = 'media';
 
 var Node = function() {}
 Node.prototype = {
@@ -94,7 +94,13 @@ uki('#list3').click(function() {
   getChildren(selectedNode.key, '#list4');
 });
 
-uki('#tracks').dblclick(function() {
+uki('#files').dblclick(function() {
+  var trackData = uki("#playlist").data();
+  trackData.push(this.data()[this.selectedIndex()]);
+  uki("#playlist").data(trackData);
+});
+
+uki('#playlist').dblclick(function() {
   var key = this.data()[this.selectedIndex()][0];
   $.couch.db(DBNAME).view('tree/by_network_location', {
     keys: [key],
@@ -109,9 +115,9 @@ uki('#tracks').dblclick(function() {
 });
 
 uki('#search').change(function() {
-  // http://localhost:5984/media/_fti/search/by_all?q=Radiohead
-  $.couch.db(DBNAME).fti('by_all', this.value(), {
-    limit: 10000,
+  // http://localhost:5984/media/_fti/search/by_metadata?q=Artist:Radiohead
+  $.couch.db(DBNAME).fti('by_metadata', this.value(), {
+    limit: 2000,
     error: function(resp) { alert('error!'); },
     success: function(json) {
       // get all keys from FTI response
@@ -125,7 +131,25 @@ uki('#search').change(function() {
             var row = json.rows[i];
             data[i] = [row.key, row.value['Name'], row.value['Artist'], row.value['Album']];
           }
-          uki("#tracks").data(data);
+          uki("#files").data(data);
+        }
+      });
+      
+      $.couch.db(DBNAME).view('tree/by_path', {
+        keys: keys,
+        success: function(json) {
+          var list1 = [];
+          var list2 = [];
+          var list3 = [];
+          for (var i in json.rows) {
+            var row = json.rows[i];
+            if($.inArray(row.value[1], list1) == -1) list1.push(row.value[1]);
+            if($.inArray(row.value[2], list2) == -1) list2.push(row.value[2]);
+            if($.inArray(row.value[3], list3) == -1) list3.push(row.value[3]);
+          }
+          uki("#list1").data(list1);
+          uki("#list2").data(list2);
+          uki("#list3").data(list3);
         }
       });
     }
@@ -143,7 +167,7 @@ function getFiles(keys) {
       }
       uki("#files").data(data);
     }
-  });  
+  });
 };
 
 function getChildren(path, listID) {
