@@ -4943,7 +4943,34 @@ uki.view.SplitTable = uki.newClass(uki.view.Container, new function() {
                 this._updateTotalWidth();
                 this._scrollPane.layout();
             }, this));
+
         };
+        
+        // make ScrollableLists
+        var left = 0;
+        s = [];
+        for (var i = 0; i < this._columns.length; i++) {
+            var scrollListRect = new Rect(left, 0, this._columns[i].width(), this._handlePosition);
+            var scrollListML = { view: 'ScrollableList', rect: scrollListRect, anchors: ' top bottom', scrollableV: true, };
+            left += this._columns[i].width();
+            s.push(scrollListML);
+        };
+        
+        headerLists = uki.build(s);
+        this._headerLists = headerLists;     
+        this._split.topChildViews(this._headerLists);
+        
+        for (var i = 0; i < this._columns.length; i++) {
+          this._columns[i].table = this; // hack, store a reference to this on the column
+          this._columns[i].bind('resize', function(f) {
+            var left = 0;
+            for (var i = 0; i < this.table._columns.length; i++) {
+              this.table._headerLists[i].rect(new Rect(left, 0, this.table._columns[i].width(), this.table._split.handlePosition()));
+              left += this.table._columns[i].width();
+              this.table._headerLists[i].layout();
+            }
+          }, this);
+        }
         this._updateTotalWidth();
         this._header.columns(this._columns);
     });
@@ -4969,7 +4996,7 @@ uki.view.SplitTable = uki.newClass(uki.view.Container, new function() {
             headerML = { view: 'table.Header', rect: headerRect, anchors: 'top left right', className: 'table-header' },
             listML = { view: this._listImpl, rect: listRect, anchors: 'left top bottom', render: new uki.view.table.Render(this), className: 'table-list' },
             paneML = { view: 'ScrollPane', rect: scrollPaneRect, anchors: 'left top right bottom', scrollableH: true, childViews: [listML], className: 'table-scroll-pane'},
-            splitML = { view: 'VerticalSplitPane', background: "#0F0", rect: splitRect, anchors: 'top left right bottom', topMin: 0, bottomMin: 0, handlePosition: this._handlePosition, bottomChildViews: [paneML] };
+            splitML = { view: 'VerticalSplitPane', rect: splitRect, anchors: 'top left right bottom', topMin: 0, bottomMin: 0, handlePosition: this._handlePosition, bottomChildViews: [paneML] };
             
         uki.each(propertiesToDelegate, function(i, name) { 
             if (this['_' + name] !== undefined) listML[name] = this['_' + name];
@@ -4984,7 +5011,8 @@ uki.view.SplitTable = uki.newClass(uki.view.Container, new function() {
         
         this._scrollPane.bind('scroll', uki.proxy(function() {
             // this is kinda wrong but faster than colling rect() + layout()
-            this._header.dom().style.left = -this._scrollPane.scrollLeft() + 'px'; 
+            this._header.dom().style.left = -this._scrollPane.scrollLeft() + 'px';
+            this._split.dom().firstChild.style.right = this._scrollPane.scrollLeft() + 'px';
         }, this));
         
     };
