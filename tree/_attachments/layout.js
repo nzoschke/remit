@@ -1,32 +1,12 @@
 uki({
-  view: 'TableBrowser', rect: '500 500', anchors: 'top bottom left right', 
+  view: 'SplitTable', rect: '500 500', anchors: 'top left', background: '#F00', handlePosition: 50,
   data: [], rowHeight: 20, id: 'files', throttle: 0,
   columns: [
     { view: 'table.CustomColumn', label: 'Artist', resizable: true, minWidth: 150, width: 150 },
     { view: 'table.CustomColumn', label: 'Album', resizable: true, minWidth: 150, width: 150 },
-    { view: 'table.CustomColumn', label: 'Name', resizable: true, minWidth: 150, width: 200, },
-  ],
-  browsers: [
-    { view: 'ScrollableList', id: 'list1', anchors: 'top bottom left right', rect: '0 17 150 134', data: [0,1,2,3,4,5,6,7,8,9,10,11,12,13], rowHeight: 20 },
-    { view: 'ScrollableList', id: 'list2', anchors: 'top bottom left', rect: '150 17 150 134', data: [,6,7,8,9,10,11,12,13,1,2,3,4,5,6,7,8,9,10,11,12,13,1,2,3,4,5,6,7,8,9,10,11,12,13,], rowHeight: 20 },
-    { view: 'ScrollableList', id: 'list3', anchors: 'top bottom left', rect: '300 17 200 134', data: [11,12,13,1,2,3,4,5,6,7,8,9,10,11,12,13,1,2,3,4,5,6,7,8,9,10,11,12,13,], rowHeight: 20 },
-  ]  
+    { view: 'table.CustomColumn', label: 'Name', resizable: true, minWidth: 150, width: 150, },
+  ]
 }).attachTo( window, '500 500');
-
-uki("#files").columns()[0].bind('resize', function(){
-  uki("#list1").rect().width = this.width();
-  uki("#list1").layout();
-});
-
-uki("#files").columns()[1].bind('resize', function(){
-  uki("#list2").rect().width = this.width();
-  uki("#list2").layout();
-});
-
-uki("#files").columns()[2].bind('resize', function(){
-  uki("#list3").rect().width = this.width();
-  uki("#list3").layout();
-});
 
 /*uki({
   view: 'VerticalSplitPane', rect: '500 600', anchors: 'left top bottom', id: 'filesContainer',

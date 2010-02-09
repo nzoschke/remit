@@ -4915,17 +4915,17 @@ uki.view.Table = uki.newClass(uki.view.Container, new function() {
     };
 });
 
-uki.view.TableBrowser = uki.newClass(uki.view.Container, new function() {
+uki.view.SplitTable = uki.newClass(uki.view.Container, new function() {
     var proto = this,
         Base = uki.view.Container.prototype,
         propertiesToDelegate = ['rowHeight', 'data', 'packSize', 'visibleRectExt', 'render', 'selectedIndex', 'focusable', 'textSelectable'];
     
-    proto.typeName = function() { return 'uki.view.TableBrowser'; };
+    proto.typeName = function() { return 'uki.view.SplitTable'; };
     proto._rowHeight = 17;
     proto._headerHeight = 17;
     proto.defaultCss = Base.defaultCss + 'overflow:hidden;';
     proto._listImpl = 'uki.view.List';
-    proto._splitHandlePosition = 100;
+    proto._handlePosition = 50;
     
     uki.each(propertiesToDelegate, function(i, name) { uki.delegateProp(proto, name, '_list'); });
     
@@ -4943,15 +4943,6 @@ uki.view.TableBrowser = uki.newClass(uki.view.Container, new function() {
         this._header.columns(this._columns);
     });
     
-    proto.browsers = uki.newProp('_browsers', function(b) {
-      this._browsers = uki.build(b);
-      var children = [this._header];
-      for (var i = 0; i < this._browsers.length; i++) {
-        children.push(this._browsers[i]);
-      }
-      this._splitPane.topChildViews(children);
-    });
-    
     proto._updateTotalWidth = function() {
         this._totalWidth = 0;
         for (var i=0; i < this._columns.length; i++) {
@@ -4966,25 +4957,25 @@ uki.view.TableBrowser = uki.newClass(uki.view.Container, new function() {
     proto._createDom = function() {
         Base._createDom.call(this);
         var headerRect = new Rect(0, 0, this.rect().width, this._headerHeight),
-            splitPaneRect = new Rect(0, 0, this.rect().width, this.rect().height),
-            scrollPaneRect = new Rect(0, 0, this.rect().width, this.rect().height - 10),
+            splitRect = new Rect(0, this._headerHeight, this.rect().width, this.rect().height - this._headerHeight),
+            scrollPaneRect = new Rect(0, 0, this.rect().width, this.rect().height - this._headerHeight - this._handlePosition - 7),
             listRect = scrollPaneRect.clone().normalize(),
+            
             headerML = { view: 'table.Header', rect: headerRect, anchors: 'top left right', className: 'table-header' },
             listML = { view: this._listImpl, rect: listRect, anchors: 'left top bottom', render: new uki.view.table.Render(this), className: 'table-list' },
-            paneML = { view: 'ScrollPane', rect: scrollPaneRect, anchors: 'left top bottom', scrollableH: true, childViews: [listML], className: 'table-scroll-pane'},
-            splitPaneML = { view: 'VerticalSplitPane', background: "#0F0", rect: scrollPaneRect, anchors: 'left top', topMin: 15, handlePosition: 150, topChildViews:[], bottomChildViews:[paneML] };
+            paneML = { view: 'ScrollPane', rect: scrollPaneRect, anchors: 'left top right bottom', scrollableH: true, childViews: [listML], className: 'table-scroll-pane'},
+            splitML = { view: 'VerticalSplitPane', background: "#0F0", rect: splitRect, anchors: 'top left right bottom', topMin: 0, bottomMin: 0, handlePosition: this._handlePosition, bottomChildViews: [paneML] };
             
         uki.each(propertiesToDelegate, function(i, name) { 
             if (this['_' + name] !== undefined) listML[name] = this['_' + name];
         }, this);
-        this._splitPane = uki.build(splitPaneML)[0];
         this._header = uki.build(headerML)[0];
-        this._splitPane.topChildViews(this._browsers);
-        //this._header = this._splitPane.topChildViews()[0];
-        this._scrollPane = this._splitPane.bottomChildViews()[0];
+        this._split = uki.build(splitML)[0];
+        this._scrollPane = this._split.bottomChildViews()[0];
         this._list = this._scrollPane.childViews()[0];
         this._scrollPane.resizeToContents();
-        this.appendChild(this._splitPane);
+        this.appendChild(this._header);
+        this.appendChild(this._split);
         
         this._scrollPane.bind('scroll', uki.proxy(function() {
             // this is kinda wrong but faster than colling rect() + layout()
@@ -5113,7 +5104,9 @@ uki.view.table.NumberColumn = uki.newClass(uki.view.table.Column, new function()
     proto._css = Base._css + 'text-align:right;';
 });
 
-uki.view.table.CustomColumn = uki.view.table.Column;uki.view.table.Header = uki.newClass(uki.view.Label, new function() {
+uki.view.table.CustomColumn = uki.view.table.Column;
+
+uki.view.table.Header = uki.newClass(uki.view.Label, new function() {
     var Base = uki.view.Label.prototype,
         proto = this;
         
