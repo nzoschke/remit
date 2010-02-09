@@ -1,5 +1,5 @@
 uki({
-  view: 'SplitTable', rect: '500 500', anchors: 'top left', background: '#F00', handlePosition: 50,
+  view: 'SplitTable', handlePosition: 50, rect: '500 500', anchors: 'top left', background: '#F00',
   data: [], rowHeight: 20, id: 'files', throttle: 0,
   columns: [
     { view: 'table.CustomColumn', label: 'Artist', resizable: true, minWidth: 150, width: 150 },

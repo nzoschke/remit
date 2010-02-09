@@ -4925,7 +4925,12 @@ uki.view.SplitTable = uki.newClass(uki.view.Container, new function() {
     proto._headerHeight = 17;
     proto.defaultCss = Base.defaultCss + 'overflow:hidden;';
     proto._listImpl = 'uki.view.List';
-    proto._handlePosition = 50;
+    proto._handlePosition = 200;
+    
+    proto.handlePosition = uki.newProp('_handlePosition', function(d) {
+        this._handlePosition = d;
+        this._split.handlePosition(this._handlePosition);
+    });
     
     uki.each(propertiesToDelegate, function(i, name) { uki.delegateProp(proto, name, '_list'); });
     
@@ -4942,7 +4947,7 @@ uki.view.SplitTable = uki.newClass(uki.view.Container, new function() {
         this._updateTotalWidth();
         this._header.columns(this._columns);
     });
-    
+        
     proto._updateTotalWidth = function() {
         this._totalWidth = 0;
         for (var i=0; i < this._columns.length; i++) {
