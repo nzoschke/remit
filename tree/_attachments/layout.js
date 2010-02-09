@@ -1,5 +1,6 @@
 uki([
   { view: 'TextField', id: 'search', rect: '505 5 190 24', anchors: 'left top', value: '', placeholder: 'Search library', },
+  { view: 'Button', id: 'go', rect: '700 5 40 24', anchors: 'left top', text: 'Go', },
   { view: 'SplitTable', id: 'files', handlePosition: 100, rect: '500 500', anchors: 'top left', background: '#FFF',
     data: [], rowHeight: 20, id: 'files', throttle: 0,
     columns: [
