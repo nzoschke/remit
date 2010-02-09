@@ -4810,7 +4810,7 @@ uki.view.ScrollableList = uki.newClass(uki.view.ScrollPane, new function() {
         this.appendChild(this._list);
     };
     
-    uki.each(['data', 'rowHeight', 'render', 'packSize', 'visibleRectExt', 'throttle', 'focusable'], function() {
+    uki.each(['data', 'selectedIndex', 'rowHeight', 'render', 'packSize', 'visibleRectExt', 'throttle', 'focusable'], function() {
         uki.delegateProp(proto, this, '_list');
     });
     
@@ -4951,7 +4951,7 @@ uki.view.SplitTable = uki.newClass(uki.view.Container, new function() {
         s = [];
         for (var i = 0; i < this._columns.length; i++) {
             var scrollListRect = new Rect(left, 0, this._columns[i].width(), this._handlePosition);
-            var scrollListML = { view: 'ScrollableList', rect: scrollListRect, anchors: ' top bottom', scrollableV: true, };
+            var scrollListML = { view: 'ScrollableList', rect: scrollListRect, id: this.id() + "List" + i.toString(), anchors: ' top bottom', scrollableV: true, };
             left += this._columns[i].width();
             s.push(scrollListML);
         };
@@ -4994,7 +4994,7 @@ uki.view.SplitTable = uki.newClass(uki.view.Container, new function() {
             listRect = scrollPaneRect.clone().normalize(),
             
             headerML = { view: 'table.Header', rect: headerRect, anchors: 'top left right', className: 'table-header' },
-            listML = { view: this._listImpl, rect: listRect, anchors: 'left top bottom', render: new uki.view.table.Render(this), className: 'table-list' },
+            listML = { view: this._listImpl, id: this.id() + "Table", rect: listRect, anchors: 'left top bottom', render: new uki.view.table.Render(this), className: 'table-list' },
             paneML = { view: 'ScrollPane', rect: scrollPaneRect, anchors: 'left top right bottom', scrollableH: true, childViews: [listML], className: 'table-scroll-pane'},
             splitML = { view: 'VerticalSplitPane', rect: splitRect, anchors: 'top left right bottom', topMin: 0, bottomMin: 0, handlePosition: this._handlePosition, bottomChildViews: [paneML] };
             

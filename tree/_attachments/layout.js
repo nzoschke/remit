@@ -15,6 +15,107 @@ uki([
 var DBNAME = 'media';
 var DOCS = {}; // local document cache
 
+var owners = [];
+$.couch.db(DBNAME).view('tree/by_owner', {
+  group: true,
+  error: function(result) { alert('error getting owners!'); },
+  success: function(result) {
+    for (var i in result.rows) {
+      var row = result.rows[i];
+      if($.inArray(row.key, owners) == -1) owners.push(row.key);
+    }
+    uki("#filesList0").data(owners);
+  }
+});
+
+var VO = function(value) { this._value = value; }
+VO.prototype = {
+  toString: function() {
+    return this._value;
+  }
+}
+
+
+uki("#filesList0").dblclick(function() {
+  // http://localhost:5984/media-small/_design/meta/_view/by_metadata_path?group=true&startkey=[["jason"]]&endkey=[["jason"],[{}]]
+  // {"rows":[{"key":[["jason"],["Air"]],"value":2}, ... }
+  owner = this.data()[this.selectedIndex()];
+  $.couch.db(DBNAME).view('tree/by_metadata_path', {
+    group: true,
+    startkey: [[owner]],
+    endkey: [[owner],[{}]],
+    error: function(result) { alert('error getting artists!'); },
+    success: function(result) {
+      var artists = [];
+      for (var i in result.rows) {
+        var row = result.rows[i];
+        var artist = row.key[1][0];
+        if ($.inArray(artist, artists) == -1) artists.push(artist);
+      }
+      uki("#filesList1").data(artists);
+      uki("#filesList2").data([]);
+      uki("#filesList3").data([]);
+    }
+  });  
+});
+
+uki("#filesList1").dblclick(function() {
+  owner = uki("#filesList0").data()[uki("#filesList0").selectedIndex()];
+  artist = this.data()[this.selectedIndex()];
+  $.couch.db(DBNAME).view('tree/by_metadata_path', {
+    group: true,
+    startkey: [[owner,artist]],
+    endkey: [[owner,artist],[{}]],
+    error: function(result) { alert('error getting albums!'); },
+    success: function(result) {
+      var albums = [];
+      for (var i in result.rows) {
+        var row = result.rows[i];
+        var album = row.key[1][0];
+        if ($.inArray(album, albums) == -1) albums.push(album);
+      }
+      uki("#filesList2").data(albums);
+      uki("#filesList3").data([]);
+    }
+  });  
+});
+
+uki("#filesList2").dblclick(function() {
+  owner = uki("#filesList0").data()[uki("#filesList0").selectedIndex()];
+  artist = uki("#filesList1").data()[uki("#filesList1").selectedIndex()];
+  album = this.data()[this.selectedIndex()];
+  $.couch.db(DBNAME).view('tree/by_metadata_path', {
+    reduce: false,
+    startkey: [[owner,artist,album]],
+    endkey: [[owner,artist,album],[{}]],
+    error: function(result) { alert('error getting names!'); },
+    success: function(result) {
+      var names = [];
+      for (var i in result.rows) {
+        var row = result.rows[i];
+        var name = new VO(row.key[1][0]);
+        name['_id'] = row.id;
+        if ($.inArray(name, names) == -1) names.push(name);
+      }
+      uki("#filesList3").data(names);
+    }
+  });  
+});
+
+uki("#filesList3").dblclick(function() {
+  var _id = this.data()[this.selectedIndex()]['_id'];
+  $.couch.db(DBNAME).view('tree/by_network_location', {
+    keys: [_id],
+    success: function(result) {
+      var audio = $("#audio")[0]
+      console.log(result.rows[0].value);
+      audio.setAttribute('src', result.rows[0].value);
+    	audio.load();
+    	audio.play();
+    }
+  });
+});
+
 uki('#search').change(function() {
   // http://localhost:5984/media/_fti/search/by_metadata?q=Artist:Radiohead
   $.couch.db(DBNAME).fti('by_metadata', this.value(), {
@@ -48,7 +149,7 @@ uki('#search').change(function() {
   });
 });
 
-uki('#files').dblclick(function() {
+uki('#filesTable').dblclick(function() {
   var key = this.data()[this.selectedIndex()][4];
   $.couch.db(DBNAME).view('tree/by_network_location', {
     keys: [key],
