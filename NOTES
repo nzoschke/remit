@@ -24,3 +24,46 @@ curl -d '{"keys":["bar","baz"]}' -X POST http://127.0.0.1:5984/foo/_all_docs
 
 # don't complain about URL globbing
 curl -g 'http://localhost:5984/media/_design/tree/_view/children?group=true&startkey=[["noah"]]&endkey=[["noah"],[{}]]'
+
+
+----------
+
+http://localhost:5984/media-small/_design/meta/_view/by_metadata_path?group=true&startkey=["jason"]&endkey=["jason",""]
+{"rows":[
+{"key":["jason"],"value":999}
+]}
+
+http://localhost:5984/media-small/_design/meta/_view/by_metadata_path?group=true&startkey=["jason","Air"]&endkey=["jason","Air",""]
+{"rows":[
+{"key":["jason","Air"],"value":2}
+]}
+
+
+http://localhost:5984/media-small/_design/meta/_view/by_metadata_path?reduce=false&include_docs=true&startkey=["jason"]&endkey=["jason",""]
+{"total_rows":3996,"offset":0,"rows":[
+{"id":"0024D3EAA8CE145D","key":["jason"],"value":1,"doc":{"_id":"0024D3EAA8CE145D","_rev":"1-e695af8f8decf8517480209148600bd2","Album":"There Goes Rhymin' Simon","Name":"Loves Me Like a Rock [Acoustic Demo]","Artist":"Paul Simon","Location":"file://localhost/Users/jjou/Music/iTunes/iTunes Music/Paul Simon/There Goes Rhymin' Simon/1 - 14 - Loves Me Like a Rock [Acoustic Demo].mp3","Owner":"jason","LocationPath":["ROOT","jason","Paul Simon","There Goes Rhymin' Simon","1 - 14 - Loves Me Like a Rock [Acoustic Demo].mp3"]}},...
+
+
+http://localhost:5984/media-small/_design/meta/_view/by_metadata_path?group=true&startkey=[["noah","Paul%20Simon"]]&endkey=[["noah","Paul%20Simon"],[{}]]
+
+{"rows":[
+{"key":[["noah","Paul Simon"],["There Goes Rhymin' Simon","Loves Me Like a Rock [Acoustic Demo]"]],"value":1}
+]}
+--
+
+jason   | Aphex Twin (noah)         | SAW Vol 2
+noah    | Phoenix    (jason)        | 
+        | Radiohead  (jason+noah)   |
+        
+        
+Owners = ['jason', 'noah']
+Artists = [AphexTwin(owners=[noah]), Phoenix(owners=[jason]), Radiohead(owners=[jason,noah])]
+
+[jason] : Air, Akon
+[jason,Air] : The Virgin Suicides, AIR
+
+--
+
+Query Builder
+Starts with all Owners, all your users Artists
+  "Owner:noah" but not GO
