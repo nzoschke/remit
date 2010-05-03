@@ -1,4 +1,5 @@
-uki.more = {};uki.more.view = {};// really basic tree list implementation
+uki.more = {};
+uki.more.view = {}; // really basic tree list implementation
 uki.more.view.treeList = {};
 
 uki.view.declare('uki.more.view.TreeList', uki.view.List, function(Base) {
@@ -119,15 +120,52 @@ uki.view.declare('uki.more.view.TreeList', uki.view.List, function(Base) {
         this.trigger('close');
     };
     
+    this.edit = function(index) {
+      console.log(index);
+      var item = this._data[index],
+          indexes = this._selectedIndexes,
+          children = uki.attr(item, 'children'),
+          _this = this;
+      
+      item.edit = true;
+      this.listData(this._data);
+      
+      uki({
+        view: 'TextField', id: 'edit-input',
+        rect: '0 1 500 20', anchors: 'left top',
+        value: item.cells[0],
+        placeholder: 'text'
+      }).attachTo(document.getElementById('editor'));
+      
+      var input = uki("#edit-input");
+      input.focus();
+      
+      input.blur(function(e) {
+        item.edit = false;
+        item.cells = [this.value()];
+        _this.listData(_this._data); // re-render
+      });
+      
+      input.keydown(function(e) {
+         e = e.domEvent;
+         if (e.which == 13 || e.keyCode == 13) { // ENTER
+           input.trigger('blur');
+         }
+         else if (e.which == 8 || e.keyCode == 8) { // DELETE
+           if (this.value() == "") input.trigger('blur');
+         } else if (e.which == 9 || e.keyCode == 9) { // TAB
+           e.preventDefault();
+         }
+       });
+    };
+    
     this._mousedown = function(e) {
-        if (e.target.className.indexOf('toggle-tree') > -1) {
-            var o = uki.dom.offset(this._dom),
-                y = e.pageY - o.y,
-                p = y / this._rowHeight << 0;
-            this.toggle(p);
-        } else {
-            Base._mousedown.call(this, e);
-        }
+      var o = uki.dom.offset(this._dom),
+          y = e.pageY - o.y,
+          p = y / this._rowHeight << 0;
+          
+          if (e.target.className.indexOf('toggle-tree') > -1) this.toggle(p);
+          else this.edit(p);
     };
 
     this._keypress = function(e) {
@@ -140,16 +178,52 @@ uki.view.declare('uki.more.view.TreeList', uki.view.List, function(Base) {
         } else if (e.which == 13 || e.keyCode == 13) { // ENTER
           var item = this._data[this.selectedIndexes()[0]],
             children = uki.attr(item, 'children'),
-            newItem = {};
+            newItem = {},
+            _this = this;
 
           if (!children || !children.length) // no children => add new sibling
-            newItem = { _id: '7B0568A4', cells: ['empty'], __indent: item.__indent, parent: item.parent, checked: false, editing: true };
+            newItem = { _id: '7B0568A4', cells: [''], __indent: item.__indent, parent: item.parent, checked: false, edit: true };
           else // children => prepend new child
-            newItem = { _id: '7B0568A4', cells: ['empty'], __indent: item.__indent + 1, parent: item, checked: false, editing: true };
+            newItem = { _id: '7B0568A4', cells: [''], __indent: item.__indent + 1, parent: item, checked: false, edit: true };
 
           this._data.splice.apply(this._data, [this.selectedIndexes()[0]+1, 0].concat( [newItem] ));
           newItem.parent.children.unshift(newItem);
           this.listData(this._data);
+          
+          uki({
+            view: 'TextField', id: 'edit-input',
+            rect: '0 0 500 20', anchors: 'left top',
+            placeholder: 'text' 
+          }).attachTo(document.getElementById('editor'));
+          
+          var input = uki("#edit-input");
+          input.focus();
+          input.blur(function(e) {
+            newItem.edit = false;
+            newItem.cells = [this.value()];
+            _this.listData(_this._data); // re-render
+          });
+          
+          input.keydown(function(e) {
+            console.log(e);
+            e = e.domEvent;
+            console.log(e.which || e.keyCode);
+            
+            if (e.which == 13 || e.keyCode == 13) { // ENTER
+              input.trigger('blur');
+            }
+            else if (e.which == 8 || e.keyCode == 8) { // DELETE
+              
+            } else if (e.which == 9 || e.keyCode == 9) { // TAB
+              e.preventDefault();
+            }
+          });
+                    
+/*          // pass control to input
+          var input = document.getElementById('topic-edit');
+          input.focus();
+          input.onblur  = function(e) { newItem.cells = [this.value]; newItem.edit = false; _this.open(0); }
+*/          //input.onkeyup = function(e) { console.log(e); }
         }
     };
 
@@ -157,6 +231,7 @@ uki.view.declare('uki.more.view.TreeList', uki.view.List, function(Base) {
 
 // tree list render
 uki.more.view.treeList.Render = uki.newClass(uki.view.list.Render, new function() {
+    // TODO: note column, checkbox, editing
     this._parentTemplate = new uki.theme.Template(
         '<div class="${classPrefix}-row ${classPrefix}-${opened}" style="margin-left:${indent}px">' + 
             '<div class="${classPrefix}-toggle"><i class="toggle-tree"></i></div>${text}' +
@@ -165,6 +240,16 @@ uki.more.view.treeList.Render = uki.newClass(uki.view.list.Render, new function(
 
     this._leafTemplate = new uki.theme.Template(
         '<div class="${classPrefix}-row" style="margin-left:${indent}px">${text}</div>'
+    );
+    
+    this._parentTemplateEdit = new uki.theme.Template(
+         '<div class="${classPrefix}-row ${classPrefix}-${opened}" style="margin-left:${indent}px">' + 
+             '<div class="${classPrefix}-toggle"><i class="toggle-tree"></i></div><div id="editor"></div>' +
+         '</div>'
+     );
+     
+    this._leafTemplateEdit = new uki.theme.Template(
+      '<div id="editor" class="${classPrefix}-row" style="margin-left:${indent}px"></div>'
     );
     
     this.initStyles = function() {
@@ -190,18 +275,21 @@ uki.more.view.treeList.Render = uki.newClass(uki.view.list.Render, new function(
         var text = row.cells[0],
             children = uki.attr(row, 'children');
         if (children && children.length) {
-            return this._parentTemplate.render({ 
+          var values = { 
                 text: text, 
                 indent: row.__indent*18 + 22,
                 classPrefix: this.classPrefix,
                 opened: row.__opened ? 'opened' : ''
-            });
+          };
+          return row.edit ? this._parentTemplateEdit.render(values) : this._parentTemplate.render(values);
+            
         } else {
-            return this._leafTemplate.render({ 
+            var values = { 
                 text: text, 
                 indent: row.__indent*18 + 22,
                 classPrefix: this.classPrefix
-            });
+            }
+            return row.edit ? this._leafTemplateEdit.render(values) : this._leafTemplate.render(values);
         }
     };
     
