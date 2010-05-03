@@ -15,16 +15,16 @@
           },
           data: {
             rows: [
-              { _id: '7B0568A4', cells: ['Software Projects'], indent: 1, parent: '00000000', checked: false },
-              { _id: '4F88E3E0', cells: ['Onliner - HTML5 OmniOutliner'], indent: 2, parent: '7B0568A4', checked: false },
-              { _id: 'BCEE3653', cells: ['UI', 'Hello there this is a note on a node.<br>This is free form multi-line content with text controls'], display: [true, false], indent: 3, parent: '4F88E3E0', checked: false },
-              { _id: '9EC6790C', cells: ['Keyboard Navigation'], indent: 4, parent: 'BCEE3653', checked: false, collapsed: true, },
-              { _id: '012DBC99', cells: ['Enter -> new node'], indent: 5, parent: '9EC6790C', checked: false },
-              { _id: 'D935C461', cells: ['Media Player'], indent: 4, parent: 'BCEE3653', checked: false },
-              { _id: '7ECF3FE9', cells: ['Drag and drop media inline'], indent: 5, parent: 'D935C461', checked: false },
-              { _id: '17BB6903', cells: ['Playback controls', 'Play, pause, next, prev, stop, shuffle'], indent: 5, parent: 'D935C461', display: [true, false], checked: false, attachments: ['0E5692B8-C200-4A06-800E-6FC64D826702', '7190D6CE-86B9-4352-99B6-C85B980F4082'] },
-              { _id: 'FCD1A466', cells: ['Todo' ], indent: 3, parent: '4F88E3E0', checked: false },
-              { _id: '29DBE756', cells: ['Start' ], indent: 4, parent: 'FCD1A466', checked: true },
+              { _id: '7B0568A4', cells: ['Software Projects'], indent: 1, parent_id: '00000000', checked: false },
+              { _id: '4F88E3E0', cells: ['Onliner - HTML5 OmniOutliner'], indent: 2, parent_id: '7B0568A4', checked: false },
+              { _id: 'BCEE3653', cells: ['UI', 'Hello there this is a note on a node.<br>This is free form multi-line content with text controls'], indent: 3, parent_id: '4F88E3E0', checked: false },
+              { _id: '9EC6790C', cells: ['Keyboard Navigation'], indent: 4, parent_id: 'BCEE3653', checked: false, collapsed: true, },
+              { _id: '012DBC99', cells: ['Enter -> new node'], indent: 5, parent_id: '9EC6790C', checked: false },
+              { _id: 'D935C461', cells: ['Media Player'], indent: 4, parent_id: 'BCEE3653', checked: false },
+              { _id: '7ECF3FE9', cells: ['Drag and drop media inline'], indent: 5, parent_id: 'D935C461', checked: false },
+              { _id: '17BB6903', cells: ['Playback controls', 'Play, pause, next, prev, stop, shuffle'], indent: 5, parent_id: 'D935C461', checked: false, attachments: ['0E5692B8-C200-4A06-800E-6FC64D826702', '7190D6CE-86B9-4352-99B6-C85B980F4082'] },
+              { _id: 'FCD1A466', cells: ['Todo' ], indent: 3, parent_id: '4F88E3E0', checked: false },
+              { _id: '29DBE756', cells: ['Start' ], indent: 4, parent_id: 'FCD1A466', checked: true },
             ],
           },
         };
@@ -34,15 +34,15 @@
         };
  
         Doc.prototype = {
-          toTree: function() {
+          toTreeList: function() { // build children property on each row by walking backwards up the list
             var nodes = {};
             for(i = this.json.data.rows.length - 1; i >= 0; i--) {
               var row = this.json.data.rows[i];
-              if (!nodes[row._id]) nodes[row._id] = { data: null, children: [] };
-              if (!nodes[row.parent]) nodes[row.parent] = { data: null, children: [] };
-              nodes[row.parent].children.unshift({ data: row.cells[0], children: nodes[row._id].children, __opened: true });
+              if (!nodes[row._id]) nodes[row._id] = { cells: [], children: [] };
+              if (!nodes[row.parent_id]) nodes[row.parent_id] = { cells: [], parent: null, children: [] };
+              nodes[row.parent_id].children.unshift({ cells: row.cells, parent: nodes[row.parent_id], children: nodes[row._id].children, __opened: true, __indent: row.indent - 1 });
             }
-            return nodes['00000000'].children;
+            return nodes['00000000'].children;            
           }
         };
       
@@ -50,7 +50,7 @@
             view: 'uki.more.view.TreeList', 
             rect: '1000 1000', 
             anchors: 'left top bottom', 
-            data: new Doc(doc).toTree(),
+            data: new Doc(doc).toTreeList(),
             rowHeight: 22,
             style: {fontSize: '12px'},
             multiselect: true

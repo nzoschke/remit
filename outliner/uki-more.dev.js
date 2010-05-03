@@ -9,9 +9,8 @@ uki.view.declare('uki.more.view.TreeList', uki.view.List, function(Base) {
     
     this.listData = Base.data;
 
-    this.data = uki.newProp('_treeData', function(v) {
-        this._treeData = v;
-        this._data = this._treeNodeToListData(v);
+    this.data = uki.newProp('_data', function(v) {
+        this._data = v;
         var children = this.listData(), opened = false;
         for (var i=children.length - 1; i >= 0 ; i--) {
             if (this._data[i].__opened) {
@@ -138,6 +137,19 @@ uki.view.declare('uki.more.view.TreeList', uki.view.List, function(Base) {
             this.open(this._lastClickIndex);
         } else if (e.which == 37 || e.keyCode == 37) { // LEFT
             this.close(this._lastClickIndex);
+        } else if (e.which == 13 || e.keyCode == 13) { // ENTER
+          var item = this._data[this.selectedIndexes()[0]],
+            children = uki.attr(item, 'children'),
+            newItem = {};
+
+          if (!children || !children.length) // no children => add new sibling
+            newItem = { _id: '7B0568A4', cells: ['empty'], __indent: item.__indent, parent: item.parent, checked: false, editing: true };
+          else // children => prepend new child
+            newItem = { _id: '7B0568A4', cells: ['empty'], __indent: item.__indent + 1, parent: item, checked: false, editing: true };
+
+          this._data.splice.apply(this._data, [this.selectedIndexes()[0]+1, 0].concat( [newItem] ));
+          newItem.parent.children.unshift(newItem);
+          this.listData(this._data);
         }
     };
 
@@ -175,7 +187,7 @@ uki.more.view.treeList.Render = uki.newClass(uki.view.list.Render, new function(
 
     this.render = function(row, rect, i) {
         this.classPrefix || this.initStyles();
-        var text = row.data,
+        var text = row.cells[0],
             children = uki.attr(row, 'children');
         if (children && children.length) {
             return this._parentTemplate.render({ 
