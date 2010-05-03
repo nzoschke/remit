@@ -26,7 +26,7 @@ doc = {
   },
   data: {
     rows: [
-      { _id: '7B0568A4', cells: ['Software Projects'], indent: 1, parent: null, checked: false },
+      { _id: '7B0568A4', cells: ['Software Projects'], indent: 1, parent: '00000000', checked: false },
       { _id: '4F88E3E0', cells: ['Onliner - HTML5 OmniOutliner'], indent: 2, parent: '7B0568A4', checked: false },
       { _id: 'BCEE3653', cells: ['UI', 'Hello there this is a note on a node.<br>This is free form multi-line content with text controls'], display: [true, false], indent: 3, parent: '4F88E3E0', checked: false },
       { _id: '9EC6790C', cells: ['Keyboard Navigation'], indent: 4, parent: 'BCEE3653', checked: false, collapsed: true, },
@@ -36,10 +36,32 @@ doc = {
       { _id: '17BB6903', cells: ['Playback controls', 'Play, pause, next, prev, stop, shuffle'], indent: 5, parent: 'D935C461', display: [true, false], checked: false, attachments: ['0E5692B8-C200-4A06-800E-6FC64D826702', '7190D6CE-86B9-4352-99B6-C85B980F4082'] },
       { _id: 'FCD1A466', cells: ['Todo' ], indent: 3, parent: '4F88E3E0', checked: false },
       { _id: '29DBE756', cells: ['Start' ], indent: 4, parent: 'FCD1A466', checked: true },
-    ]
-  }
+    ],
+  },
 };
 
+function Doc(json) {  
+  this.json = json;
+}
+Doc.prototype = {
+  toTree: function() {
+    var nodes = {};
+    for(i = this.json.data.rows.length - 1; i >= 0; i--) {
+      var row = this.json.data.rows[i];
+      if (!nodes[row._id]) nodes[row._id] = { data: null, children: [] };
+      if (!nodes[row.parent]) nodes[row.parent] = { data: null, children: [] };
+      nodes[row.parent].children.unshift({ data: row.cells[0], children: nodes[row._id].children });
+    }
+    console.log(nodes);
+    return nodes['00000000'].children[0];
+  }
+}
+d = new Doc(doc);
+d.toTree();
+
+
+
+[
     { data: 'Sample value', notes: null, checked: false },
     { data: 'Sample value' },
     { data: 'Sample value', children: [
