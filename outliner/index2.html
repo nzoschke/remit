@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+  <head> 
+    <title>outline</title> 
+    <script type="text/javascript" src="http://code.jquery.com/jquery-1.4.2.js"></script>
+    <script type="text/javascript" src="jquery.mustache.js"></script>
+    <script>
+      doc = {
+        _id: 'E47B9833-F84B-4E03-9F57-BE1ED596D129',
+        _rev: '1',
+        metadata: {
+          cols: ['topic', 'note' ], // FIXME: OO does note, topic
+          playhead: 0,
+        },
+        data: {
+          rows: [
+            { _id: '7B0568A4', cells: ['Software Projects'], indent: 1, parent_id: '00000000', checked: false },
+            { _id: '4F88E3E0', cells: ['Onliner - HTML5 OmniOutliner'], indent: 2, parent_id: '7B0568A4', checked: false },
+            { _id: 'BCEE3653', cells: ['UI', 'Hello there this is a note on a node.<br>This is free form multi-line content with text controls'], indent: 3, parent_id: '4F88E3E0', checked: false },
+            { _id: '9EC6790C', cells: ['Keyboard Navigation'], indent: 4, parent_id: 'BCEE3653', checked: false, collapsed: true, },
+            { _id: '012DBC99', cells: ['Enter -> new node'], indent: 5, parent_id: '9EC6790C', checked: false },
+            { _id: 'D935C461', cells: ['Media Player'], indent: 4, parent_id: 'BCEE3653', checked: false },
+            { _id: '7ECF3FE9', cells: ['Drag and drop media inline'], indent: 5, parent_id: 'D935C461', checked: false },
+            { _id: '17BB6903', cells: ['Playback controls', 'Play, pause, next, prev, stop, shuffle'], indent: 5, parent_id: 'D935C461', checked: false, attachments: ['0E5692B8-C200-4A06-800E-6FC64D826702', '7190D6CE-86B9-4352-99B6-C85B980F4082'] },
+            { _id: 'FCD1A466', cells: ['Todo' ], indent: 3, parent_id: '4F88E3E0', checked: false },
+            { _id: '29DBE756', cells: ['Start' ], indent: 4, parent_id: 'FCD1A466', checked: true },
+          ],
+        },
+      };
+        
+      function JSO(json) {
+        this.json = json;
+        // walk the tree and build it
+      };
+
+      JSO.prototype = {
+        toHTML: function() {
+          var template = '{{#rows}}                \
+            <div class="row {{indent}}">           \
+              {{%IMPLICIT-ITERATOR iterator=cell}} \
+              {{#cells}}                           \
+                <span class="cell">{{cell}}</span> \
+              {{/cells}}                           \
+            </div>                                 \
+          {{/rows}}';
+          var html = $.mustache(template, doc.data);
+          $("#body").append(html);
+        }
+      };
+      
+      $(document).ready(function(e) {
+        console.log('ready');
+        var d = new JSO(doc);
+        d.toHTML();
+      });
+      
+    </script>
+  </head> 
+  <body>
+    <div id="body"></div>
+  </body>
+</html>
